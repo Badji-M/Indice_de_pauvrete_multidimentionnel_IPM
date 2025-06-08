@@ -35,7 +35,6 @@ use "${data}/ehcvm_individu_SEN2021.dta", clear
 * Critère : Le ménage a un enfant de 6 à 16 ans qui ne fréquente pas l'école
 
 
-**# Bookmark #8
 rename numind s01q00a
 merge 1:1 grappe menage s01q00a using"${data}/s02_me_SEN2021.dta",keepusing(s02q12) gen(first_merge)
 rename s02q12 freq_scol
@@ -52,14 +51,12 @@ bysort hhid (enfant_non_scol): egen priv_freq_scol = max(enfant_non_scol)
 
 
 
-*** INDICATEUR 3 : Nombre d'année de scolarité ***
+*** INDICATEUR 2 : Nombre d'année de scolarité ***
 * Critère :  Aucun membre du ménage âgé de 15 ans ou plus n'a complété 6 années d'études (ie le niveau primaire)
 
 	* 1. Créer la variable binaire : a complété ≥6 ans d'études ?
 	gen educ6 = .
-
-	replace educ6 = 1 if inlist(educ_hi,3,4,5,6,7,8,9)
-	   
+	replace educ6 = 1 if inlist(educ_hi,3,4,5,6,7,8,9)	   
 	replace educ6 = 0 if inlist(educ_hi,1,2)
 
 	* 2. Ne considérer que les membres de 15 ans ou plus
@@ -67,14 +64,14 @@ bysort hhid (enfant_non_scol): egen priv_freq_scol = max(enfant_non_scol)
 	replace educ6_15plus = educ6 if age >= 15
 
 	* 3. Vérifier s'il y a AU MOINS un membre de 15 ans+ avec >=6 ans d'études
-	bysort hhid: egen priv_educ = max(educ6_15plus)
+	bysort hhid: egen privation_educ = max(educ6_15plus)
 
 	* 4. Générer la variable de privation : 1 = privé (aucun membre 15+ avec 6 ans ou plus)
-	gen priv_educ6 = (priv_educ == 0)
+	gen priv_educ6 = (privation_educ == 0)
 	label variable priv_educ6 "Privation : Aucun membre 15+ n'a complété 6 ans d'études"
 
 
-*** INDICATEUR 4 : Alphabétisation ***
+*** INDICATEUR 3 : Alphabétisation ***
 * Critère : Le quart des membres du ménage de 15 ans ou plus ne sait pas lire ou écrire (Français/Arabe/Autre)
 
 
@@ -147,9 +144,6 @@ bysort hhid: egen priv_handicap = max(privation_handicap)
 
 
 
-
-
-
 **************************************************
 * //Dimension : Emploi
 ****************************************************
@@ -217,7 +211,7 @@ bysort hhid: egen priv_handicap = max(privation_handicap)
 
 
 
-**PASSATION DE BASE;DTA
+**PASSATION DE BASE.DTA individu vers menage
 	bysort hhid (s01q00a): keep if _n == 1
 	save "${data}/privation_education_sante_emploi.dta", replace
 	use "${data}/ehcvm_menage_SEN2021"
@@ -299,7 +293,7 @@ gen priv_equipement = ((tv + ordin + cuisin + frigo + fer + decod) < 2) & (car =
 * -----------------------------------------------------------
 
 *** INDICATEUR 1 : Nombre de chocs***
-* Seuil de privation :Le ménage a vecu au cours des 12 derniers mois plus de deux de ces 5 chocs (choc covariant economique - Choc covariant naturrel - Choc covariant violence - Choc idio démographique - Choc idio economique)
+* Seuil de privation :Le ménage a vecu au cours des 12 derniers mois plus de deux de ces 5 chocs (choc covariant economique - Choc covariant naturel - Choc covariant violence - Choc idio démographique - Choc idio economique)
 
 
 gen nb_choc = sh_co_eco + sh_co_natu + sh_co_vio + sh_id_demo + sh_id_eco
@@ -309,15 +303,6 @@ gen priv_choc = (nb_choc > 2)
 save "${data}/base_finale.dta", replace
 
 
-
-
-
-
-
-
-
-
-
-
+do "${codes}/CALCULS.do"
 
 
